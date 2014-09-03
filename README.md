@@ -7,6 +7,7 @@
 - Title (String)
 - Artist (String)
 - URL where song can be accessed (String)
+- Created by (ObjectId)
 - Soundslike ids (Array)
 
 ###Soundslike

@@ -73,13 +73,15 @@ describe('Song API', function() {
         .post('/api/songs')
         .set('authorization', 'Bearer ' + token)
         .send(song)
-        .expect(200)
+        .expect(201)
         .end(function(err, res) {
           if (err) return done(err);
           res.body.should.have.property('_id');
           res.body.title.should.equal(song.title);
           res.body.artist.should.equal(song.artist);
           res.body.url.should.equal(song.url);
+          res.body.created_by.should.equal(user._id.toString());
+          done();
        });
     });
   })
