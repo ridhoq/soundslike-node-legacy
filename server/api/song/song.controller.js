@@ -22,8 +22,8 @@ exports.show = function(req, res) {
 
 // Creates a new song in the DB.
 exports.create = function(req, res) {
-  Song.create({title: req.body.title, artist: req.body.artist, url:req.body.url, created_by: req.user._id}
-    , function(err, song) {
+  Song.create({title: req.body.title, artist: req.body.artist, url:req.body.url, created_by: req.user._id},
+   function(err, song) {
     if(err) { return handleError(res, err); }
     return res.json(201, song);
   });
