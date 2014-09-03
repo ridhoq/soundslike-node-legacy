@@ -2,19 +2,86 @@
 
 var should = require('should');
 var app = require('../../app');
+var User = require('../user/user.model');
 var request = require('supertest');
 
-describe('GET /api/songs', function() {
+describe('Song API', function() {
 
-  it('should respond with JSON array', function(done) {
-    request(app)
-      .get('/api/songs')
-      .expect(200)
-      .expect('Content-Type', /json/)
-      .end(function(err, res) {
+  var user;
+
+  // Clear users before testing
+  before(function(done) {
+    User.remove(function() {
+      user = new User({
+        name: 'Fake User',
+        email: 'test@test.com',
+        password: 'password'
+      });
+
+      user.save(function(err) {
         if (err) return done(err);
-        res.body.should.be.instanceof(Array);
         done();
       });
+    });
   });
-});
+
+  // Clear users after testing
+  after(function() {
+    return User.remove().exec();
+  });
+
+  describe('GET /api/songs', function() {
+
+    it('should respond with JSON array', function(done) {
+      request(app)
+        .get('/api/songs')
+        .expect(200)
+        .expect('Content-Type', /json/)
+        .end(function(err, res) {
+          if (err) return done(err);
+          res.body.should.be.instanceof(Array);
+          done();
+        });
+    });
+  });
+
+  describe('POST /api/songs/', function() {
+    var token;
+
+    before(function(done) {
+      request(app)
+        .post('/auth/local')
+        .send({
+          email: 'test@test.com',
+          password: 'password'
+        })
+        .expect(200)
+        .expect('Content-Type', /json/)
+        .end(function(err, res) {
+          token = res.body.token;
+          done();
+        });
+    });
+
+    it('should respond with a Song JSON object given a valid body', function(done) {
+      var song = {
+        title: 'Hours',
+        artist: 'Tycho',
+        url: 'https://soundcloud.com/tycho/hours'
+      };
+      request(app)
+        .post('/api/songs')
+        .set('authorization', 'Bearer ' + token)
+        .send(song)
+        .expect(200)
+        .end(function(err, res) {
+          if (err) return done(err);
+          res.body.should.have.property('_id');
+          res.body.title.should.equal(song.title);
+          res.body.artist.should.equal(song.artist);
+          res.body.url.should.equal(song.url);
+       });
+    });
+  })
+
+})
