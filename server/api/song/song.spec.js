@@ -1,6 +1,7 @@
 'use strict';
 
 var should = require('should');
+var mongoose = require('mongoose');
 var app = require('../../app');
 var User = require('../user/user.model');
 var request = require('supertest');
@@ -83,7 +84,7 @@ describe('Song API', function() {
           res.body.created_by.should.equal(user._id.toString());
           User.findById(user._id, function(err, checkUser) {
             if (err) return done(err);
-            checkUser.created_songs.should.have.length(1);
+            checkUser.created_songs.should.containEql(mongoose.Types.ObjectId(res.body._id));
           });
           done();
        });
