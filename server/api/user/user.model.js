@@ -13,7 +13,8 @@ var UserSchema = new Schema({
   },
   hashedPassword: String,
   provider: String,
-  salt: String
+  salt: String,
+  created_songs: [{type: Schema.Types.ObjectId, ref: 'Song'}]
 });
 
 /**

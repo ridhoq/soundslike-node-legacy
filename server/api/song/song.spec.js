@@ -81,6 +81,10 @@ describe('Song API', function() {
           res.body.artist.should.equal(song.artist);
           res.body.url.should.equal(song.url);
           res.body.created_by.should.equal(user._id.toString());
+          User.findById(user._id, function(err, checkUser) {
+            if (err) return done(err);
+            checkUser.created_songs.should.have.length(1);
+          });
           done();
        });
     });

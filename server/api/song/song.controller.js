@@ -2,6 +2,7 @@
 
 var _ = require('lodash');
 var Song = require('./song.model');
+var User = require('../user/user.model');
 
 // Get list of songs
 exports.index = function(req, res) {
@@ -22,11 +23,23 @@ exports.show = function(req, res) {
 
 // Creates a new song in the DB.
 exports.create = function(req, res) {
-  Song.create({title: req.body.title, artist: req.body.artist, url:req.body.url, created_by: req.user._id},
-   function(err, song) {
-    if(err) { return handleError(res, err); }
-    return res.json(201, song);
-  });
+  Song.create(
+    {
+      title: req.body.title,
+      artist: req.body.artist,
+      url:req.body.url,
+      created_by: req.user._id
+    },
+    function(err, song) {
+      if(err) { return handleError(res, err); }
+      User.findByIdAndUpdate(req.user._id,
+        {$push: {created_songs: song._id}},
+        function(err) {
+          if(err) { return handleError(res, err); }
+          return res.json(201, song);
+        });
+    });
+
 };
 
 // Updates an existing song in the DB.
