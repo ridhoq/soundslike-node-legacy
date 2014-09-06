@@ -85,10 +85,52 @@ describe('Song API', function() {
           User.findById(user._id, function(err, checkUser) {
             if (err) return done(err);
             checkUser.created_songs.should.containEql(mongoose.Types.ObjectId(res.body._id));
+            done();
           });
-          done();
        });
     });
+
+    it('should respond with an error when given invalid data', function(done) {
+      var song = {};
+      request(app)
+        .post('/api/songs')
+        .set('authorization', 'Bearer ' + token)
+        .send(song)
+        .expect(400)
+        .end(function(err, res) {
+          if (err) return done(err);
+          res.body.should.have.length(3);
+      });
+      song = {
+        title: 'Hours'
+      };
+      request(app)
+        .post('/api/songs')
+        .set('authorization', 'Bearer ' + token)
+        .send(song)
+        .expect(400)
+        .end(function(err, res) {
+          if (err) return done(err);
+          res.body.should.have.length(2);
+      });
+      song = {
+        title: 'Hours',
+        artist: 'Tycho'
+      };
+      request(app)
+        .post('/api/songs')
+        .set('authorization', 'Bearer ' + token)
+        .send(song)
+        .expect(400)
+        .end(function(err, res) {
+          if (err) return done(err);
+          res.body.should.have.length(1);
+          done();
+      });
+
+    });
+
+
   })
 
 })

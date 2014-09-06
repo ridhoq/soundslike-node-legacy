@@ -3,6 +3,7 @@
 var _ = require('lodash');
 var Song = require('./song.model');
 var User = require('../user/user.model');
+var errorHelper = require('mongoose-error-helper').errorHelper;
 
 // Get list of songs
 exports.index = function(req, res) {
@@ -69,5 +70,10 @@ exports.destroy = function(req, res) {
 };
 
 function handleError(res, err) {
-  return res.send(500, err);
+  var statusCode = 500;
+  if (err.name === 'ValidationError') {
+    err = errorHelper(err);
+    statusCode = 400;
+  }
+  return res.send(statusCode, err);
 }
