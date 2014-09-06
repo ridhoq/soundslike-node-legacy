@@ -21,4 +21,10 @@ SongSchema
     return '/songs/' + location;
   });
 
+SongSchema
+  .virtual('apiLocation')
+  .get(function() {
+    return '/api/songs/' + this._id;
+  });
+
 module.exports = mongoose.model('Song', SongSchema);

@@ -81,7 +81,7 @@ describe('Song API', function() {
           res.body.title.should.equal(song.title);
           res.body.artist.should.equal(song.artist);
           res.body.url.should.equal(song.url);
-          res.get('location').should.equal('/songs/hours-tycho');
+          res.get('location').should.equal('/api/songs/' + res.body._id);
           res.body.created_by.should.equal(user._id.toString());
           User.findById(user._id, function(err, checkUser) {
             if (err) return done(err);
