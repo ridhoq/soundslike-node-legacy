@@ -127,7 +127,19 @@ describe('Song API', function() {
           res.body.should.have.length(1);
           done();
       });
+    });
 
+    it('should respond with an error with not authenticated', function(done) {
+      var song = {
+        title: 'Hours',
+        artist: 'Tycho',
+        url: 'https://soundcloud.com/tycho/hours'
+      };
+      request(app)
+        .post('/api/songs')
+        .send(song)
+        .expect(401)
+        .end(done);
     });
 
 
