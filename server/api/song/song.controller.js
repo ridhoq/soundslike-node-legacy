@@ -33,7 +33,6 @@ exports.create = function(req, res) {
     },
     function(err, song) {
       if(err) { return handleError(res, err); }
-      console.log(song.location);
       res.location(song.location);
       User.findByIdAndUpdate(req.user._id,
         {$push: {created_songs: song._id}},
