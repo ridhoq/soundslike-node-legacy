@@ -10,4 +10,15 @@ var SongSchema = new Schema({
   created_by: {type: Schema.Types.ObjectId, required: true, ref: 'User'}
 });
 
+/**
+ * Virtuals
+ */
+SongSchema
+  .virtual('location')
+  .get(function() {
+    var location = this.title + '-' + this.artist;
+    location = location.replace(/[^a-z0-9]/gi, '-').toLowerCase();
+    return '/songs/' + location;
+  });
+
 module.exports = mongoose.model('Song', SongSchema);
