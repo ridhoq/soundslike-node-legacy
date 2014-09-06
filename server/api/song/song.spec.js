@@ -130,7 +130,7 @@ describe('Song API', function() {
       });
     });
 
-    it('should respond with an error with not authenticated', function(done) {
+    it('should respond with an error when not authenticated', function(done) {
       var song = {
         title: 'Hours',
         artist: 'Tycho',
@@ -142,8 +142,5 @@ describe('Song API', function() {
         .expect(401)
         .end(done);
     });
-
-
-  })
-
-})
+  });
+});
