@@ -143,4 +143,54 @@ describe('Song API', function() {
         .end(done);
     });
   });
+
+  describe('GET /api/songs/:id', function() {
+    var token;
+    var song = {
+      title: 'Hours',
+      artist: 'Tycho',
+      url: 'https://soundcloud.com/tycho/hours'
+    };
+    var songId;
+
+    before(function(done) {
+      request(app)
+        .post('/auth/local')
+        .send({
+          email: 'test@test.com',
+          password: 'password'
+        })
+        .expect(200)
+        .expect('Content-Type', /json/)
+        .end(function(err, res) {
+          token = res.body.token;
+          request(app)
+          .post('/api/songs')
+          .set('authorization', 'Bearer ' + token)
+          .send(song)
+          .expect(201)
+          .end(function(err, res) {
+            if (err) return done(err);
+            songId = res.body._id;
+            done();
+      });
+
+        });
+
+          });
+
+    it('should retrieve the correct Song data when given the corresponding id', function(done) {
+      request(app)
+        .get('/api/songs/' + songId)
+        .expect(200)
+        .expect('Content-Type', /json/)
+        .end(function(err, res) {
+          if (err) return done(err);
+          res.body.title.should.equal(song.title);
+          res.body.artist.should.equal(song.artist);
+          res.body.url.should.equal(song.url);
+          done();
+        });
+    });
+  });
 });
