@@ -173,11 +173,9 @@ describe('Song API', function() {
             if (err) return done(err);
             songId = res.body._id;
             done();
-      });
-
-        });
-
           });
+        });
+      });
 
     it('should retrieve the correct Song data when given the corresponding id', function(done) {
       request(app)
