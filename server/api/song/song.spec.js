@@ -4,6 +4,7 @@ var should = require('should');
 var mongoose = require('mongoose');
 var app = require('../../app');
 var User = require('../user/user.model');
+var Song = require('./song.model');
 var request = require('supertest');
 
 describe('Song API', function() {
@@ -30,6 +31,7 @@ describe('Song API', function() {
   after(function() {
     return User.remove().exec();
   });
+
 
   describe('GET /api/songs', function() {
 
@@ -64,6 +66,10 @@ describe('Song API', function() {
         });
     });
 
+    beforeEach(function(done) {
+      Song.remove({}, done);
+    });
+
     it('should respond with a Song JSON object given a valid body', function(done) {
       var song = {
         title: 'Hours',
@@ -75,6 +81,7 @@ describe('Song API', function() {
         .set('authorization', 'Bearer ' + token)
         .send(song)
         .expect(201)
+        .expect('Content-Type', /json/)
         .end(function(err, res) {
           if (err) return done(err);
           res.body.should.have.property('_id');
@@ -83,54 +90,11 @@ describe('Song API', function() {
           res.body.url.should.equal(song.url);
           res.get('location').should.equal('/api/songs/' + res.body._id);
           res.body.created_by.should.equal(user._id.toString());
-          User.findById(user._id, function(err, checkUser) {
-            if (err) return done(err);
-            checkUser.created_songs.should.containEql(mongoose.Types.ObjectId(res.body._id));
-            done();
-          });
-       });
-    });
-
-    it('should respond with an error when given invalid data', function(done) {
-      var song = {};
-      request(app)
-        .post('/api/songs')
-        .set('authorization', 'Bearer ' + token)
-        .send(song)
-        .expect(400)
-        .end(function(err, res) {
-          if (err) return done(err);
-          res.body.should.have.length(3);
-      });
-      song = {
-        title: 'Hours'
-      };
-      request(app)
-        .post('/api/songs')
-        .set('authorization', 'Bearer ' + token)
-        .send(song)
-        .expect(400)
-        .end(function(err, res) {
-          if (err) return done(err);
-          res.body.should.have.length(2);
-      });
-      song = {
-        title: 'Hours',
-        artist: 'Tycho'
-      };
-      request(app)
-        .post('/api/songs')
-        .set('authorization', 'Bearer ' + token)
-        .send(song)
-        .expect(400)
-        .end(function(err, res) {
-          if (err) return done(err);
-          res.body.should.have.length(1);
           done();
-      });
+        });
     });
 
-    it('should respond with an error when not authenticated', function(done) {
+    it('should respond with an error when creating a song with a url that has already been used', function(done) {
       var song = {
         title: 'Hours',
         artist: 'Tycho',
@@ -138,18 +102,79 @@ describe('Song API', function() {
       };
       request(app)
         .post('/api/songs')
+        .set('authorization', 'Bearer ' + token)
         .send(song)
-        .expect(401)
-        .end(done);
+        .expect(201)
+        .end(function(err) {
+          if (err) return done(err);
+          request(app)
+            .post('/api/songs')
+            .set('authorization', 'Bearer ' + token)
+            .send(song)
+            .expect(400)
+            .end(done);
+        });
+
+      it('should respond with an error when given invalid data', function(done) {
+        var song = {};
+        request(app)
+          .post('/api/songs')
+          .set('authorization', 'Bearer ' + token)
+          .send(song)
+          .expect(400)
+          .end(function(err, res) {
+            if (err) return done(err);
+            res.body.should.have.length(3);
+          });
+        song = {
+          title: 'Hours'
+        };
+        request(app)
+          .post('/api/songs')
+          .set('authorization', 'Bearer ' + token)
+          .send(song)
+          .expect(400)
+          .end(function(err, res) {
+            if (err) return done(err);
+            res.body.should.have.length(2);
+          });
+        song = {
+          title: 'Hours',
+          artist: 'Tycho'
+        };
+        request(app)
+          .post('/api/songs')
+          .set('authorization', 'Bearer ' + token)
+          .send(song)
+          .expect(400)
+          .end(function(err, res) {
+            if (err) return done(err);
+            res.body.should.have.length(1);
+            done();
+          });
+      });
+
+      it('should respond with an error when not authenticated', function(done) {
+        var song = {
+          title: 'Hours',
+          artist: 'Tycho',
+          url: 'https://soundcloud.com/tycho/hours'
+        };
+        request(app)
+          .post('/api/songs')
+          .send(song)
+          .expect(401)
+          .end(done);
+      });
     });
   });
 
   describe('GET /api/songs/:id', function() {
     var token;
     var song = {
-      title: 'Hours',
-      artist: 'Tycho',
-      url: 'https://soundcloud.com/tycho/hours'
+      title: 'Hyrule Kastle',
+      artist: 'High Klassified',
+      url: 'https://soundcloud.com/high-klassified/high-klassified-hyrule-kastle'
     };
     var songId;
 
@@ -161,7 +186,6 @@ describe('Song API', function() {
           password: 'password'
         })
         .expect(200)
-        .expect('Content-Type', /json/)
         .end(function(err, res) {
           token = res.body.token;
           request(app)
@@ -169,13 +193,14 @@ describe('Song API', function() {
           .set('authorization', 'Bearer ' + token)
           .send(song)
           .expect(201)
+          .expect('Content-Type', /json/)
           .end(function(err, res) {
             if (err) return done(err);
             songId = res.body._id;
             done();
           });
         });
-      });
+    });
 
     it('should retrieve the correct Song data when given the corresponding id', function(done) {
       request(app)

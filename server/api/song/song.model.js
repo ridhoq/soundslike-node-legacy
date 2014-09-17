@@ -6,7 +6,7 @@ var mongoose = require('mongoose'),
 var SongSchema = new Schema({
   title: {type: String, required: true},
   artist: {type: String, required: true},
-  url: {type: String, required: true},
+  url: {type: String, required: true, unique: true},
   created_by: {type: Schema.Types.ObjectId, required: true, ref: 'User'}
 });
 

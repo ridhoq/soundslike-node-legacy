@@ -72,9 +72,14 @@ exports.destroy = function(req, res) {
 
 function handleError(res, err) {
   var statusCode = 500;
+  console.log(err);
   if (err.name === 'ValidationError') {
     err = errorHelper(err);
     statusCode = 400;
   }
-  return res.send(statusCode, err);
+  if (err.name === 'MongoError' && err.code === 11000) {
+    err = ['A song with that url already exists'];
+    statusCode = 400;
+  }
+  return res.json(statusCode, err);
 }
