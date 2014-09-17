@@ -14,7 +14,7 @@ var UserSchema = new Schema({
   hashedPassword: String,
   provider: String,
   salt: String,
-  created_songs: [{type: Schema.Types.ObjectId, ref: 'Song'}]
+  songsCreated: [{type: Schema.Types.ObjectId, ref: 'Song'}]
 });
 
 /**

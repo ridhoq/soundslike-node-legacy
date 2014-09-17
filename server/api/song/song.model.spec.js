@@ -21,11 +21,11 @@ describe('Song Model', function() {
 
   describe('location', function() {
     it('should correctly return a location with a title/artist that has no spaces', function(done) {
-      var song = Song.create({
+      Song.create({
         title: 'Florida',
         artist: 'Starfucker',
         url: 'https://soundcloud.com/starfucker_usa/florida',
-        created_by: Mongoose.Types.ObjectId()
+        createdBy: Mongoose.Types.ObjectId()
       },
       function(err, song) {
         if (err) throw err;

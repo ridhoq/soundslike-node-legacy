@@ -89,7 +89,7 @@ describe('Song API', function() {
           res.body.artist.should.equal(song.artist);
           res.body.url.should.equal(song.url);
           res.get('location').should.equal('/api/songs/' + res.body._id);
-          res.body.created_by.should.equal(user._id.toString());
+          res.body.createdBy.should.equal(user._id.toString());
           done();
         });
     });

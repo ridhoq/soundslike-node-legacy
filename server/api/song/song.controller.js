@@ -29,13 +29,13 @@ exports.create = function(req, res) {
       title: req.body.title,
       artist: req.body.artist,
       url:req.body.url,
-      created_by: req.user._id
+      createdBy: req.user._id
     },
     function(err, song) {
       if(err) { return handleError(res, err); }
       res.location(song.apiLocation);
       User.findByIdAndUpdate(req.user._id,
-        {$push: {created_songs: song._id}},
+        {$push: {songsCreated: song._id}},
         function(err) {
           if(err) { return handleError(res, err); }
           return res.json(201, song);
