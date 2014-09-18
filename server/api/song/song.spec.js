@@ -271,4 +271,92 @@ describe('Song API', function() {
         .expect(404, done);
     });
   });
+
+  describe('PUT /api/songs/:id', function() {
+    var song = {
+      title: 'Work',
+      artist: 'A$AP Ferg',
+      url: 'https://soundcloud.com/asapferg/work'
+    };
+
+    var modifiedSong = {
+      title: 'Work (Remix)',
+      artist: 'A$AP Ferg ft. A$AP Rocky, French Montana, SchoolBoy Q & Trinidad James',
+      url: 'https://soundcloud.com/asapferg/work-remix-ft-a-ap-rocky'
+    };
+
+    var songId;
+
+    before(function(done) {
+      var token;
+      request(app)
+        .post('/auth/local')
+        .send({
+          email: 'test@test.com',
+          password: 'password'
+        })
+        .expect(200)
+        .end(function(err, res) {
+          token = res.body.token;
+          request(app)
+          .post('/api/songs')
+          .set('authorization', 'Bearer ' + token)
+          .send(song)
+          .expect(201)
+          .expect('Content-Type', /json/)
+          .end(function(err, res) {
+            if (err) return done(err);
+            songId = res.body._id;
+            done();
+          });
+        });
+    });
+
+    it('should modify the Song when given valid data', function(done) {
+      var token;
+      request(app)
+        .post('/auth/local')
+        .send({
+          email: 'admin@admin.com',
+          password: '1234567890'
+        })
+        .expect(200)
+        .end(function(err, res) {
+          token = res.body.token;
+          request(app)
+          .put('/api/songs/' + songId)
+          .set('authorization', 'Bearer ' + token)
+          .send(modifiedSong)
+          .expect(200)
+          .expect('Content-Type', /json/)
+          .end(function(err, res) {
+            if (err) return done(err);
+            console.log(res);
+            res.body.title.should.equal(modifiedSong.title);
+            res.body.artist.should.equal(modifiedSong.artist);
+            res.body.url.should.equal(modifiedSong.url);
+            done();
+          });
+        });
+    });
+
+    it('should respond with an error when a user makes the request', function(done) {
+      var token;
+      request(app)
+        .post('/auth/local')
+        .send({
+          email: 'test@test.com',
+          password: 'password'
+        })
+        .expect(200)
+        .end(function(err, res) {
+          token = res.body.token;
+          request(app)
+          .put('/api/songs/' + songId)
+          .set('authorization', 'Bearer ' + token)
+          .send(modifiedSong)
+          .expect(403, done);
+        });
+    });
+  });
 });
