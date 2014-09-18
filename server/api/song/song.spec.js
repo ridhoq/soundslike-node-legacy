@@ -331,7 +331,6 @@ describe('Song API', function() {
           .expect('Content-Type', /json/)
           .end(function(err, res) {
             if (err) return done(err);
-            console.log(res);
             res.body.title.should.equal(modifiedSong.title);
             res.body.artist.should.equal(modifiedSong.artist);
             res.body.url.should.equal(modifiedSong.url);
