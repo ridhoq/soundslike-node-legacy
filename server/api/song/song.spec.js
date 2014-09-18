@@ -263,5 +263,12 @@ describe('Song API', function() {
           done();
         });
     });
+
+    it('should return with an error when given an invalid id', function(done) {
+      var nullSongId = mongoose.Types.ObjectId();
+      request(app)
+        .get('/api/songs/' + nullSongId)
+        .expect(404, done);
+    });
   });
 });
