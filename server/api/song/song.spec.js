@@ -10,6 +10,7 @@ var request = require('supertest');
 describe('Song API', function() {
 
   var user;
+  var admin;
 
   // Clear users before testing
   before(function(done) {
@@ -20,9 +21,19 @@ describe('Song API', function() {
         password: 'password'
       });
 
+      admin = new User({
+        name: 'Fake Admin',
+        email: 'admin@admin.com',
+        password: '1234567890',
+        role: 'admin'
+      });
+
       user.save(function(err) {
         if (err) return done(err);
-        done();
+        admin.save(function(err) {
+          if (err) return done(err);
+          done();
+        });
       });
     });
   });
@@ -32,12 +43,42 @@ describe('Song API', function() {
     return User.remove().exec();
   });
 
-
   describe('GET /api/songs', function() {
+    var userToken;
+    var adminToken;
 
-    it('should respond with JSON array', function(done) {
+    before(function(done) {
+      request(app)
+        .post('/auth/local')
+        .send({
+          email: 'test@test.com',
+          password: 'password'
+        })
+        .expect(200)
+        .expect('Content-Type', /json/)
+        .end(function(err, res) {
+          if (err) done(err);
+          userToken = res.body.token;
+          request(app)
+            .post('/auth/local')
+            .send({
+              email: 'admin@admin.com',
+              password: '1234567890'
+            })
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end(function(err, res) {
+              if (err) done(err);
+              adminToken = res.body.token;
+              done();
+            });
+        });
+    });
+
+    it('should respond with JSON array when logged in as an admin', function(done) {
       request(app)
         .get('/api/songs')
+        .set('authorization', 'Bearer ' + adminToken)
         .expect(200)
         .expect('Content-Type', /json/)
         .end(function(err, res) {
@@ -45,6 +86,13 @@ describe('Song API', function() {
           res.body.should.be.instanceof(Array);
           done();
         });
+    });
+
+    it('should respond with an error when logged in as a user', function(done) {
+      request(app)
+        .get('/api/songs')
+        .set('authorization', 'Bearer ' + userToken)
+        .expect(403, done);
     });
   });
 
