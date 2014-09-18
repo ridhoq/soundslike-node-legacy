@@ -72,7 +72,6 @@ exports.destroy = function(req, res) {
 
 function handleError(res, err) {
   var statusCode = 500;
-  console.log(err);
   if (err.name === 'ValidationError') {
     err = errorHelper(err);
     statusCode = 400;
