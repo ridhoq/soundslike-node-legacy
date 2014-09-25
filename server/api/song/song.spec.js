@@ -11,6 +11,7 @@ describe('Song API', function() {
 
   var user;
   var admin;
+  var anotherUser;
 
   // Clear users before testing
   before(function(done) {
@@ -28,11 +29,20 @@ describe('Song API', function() {
         role: 'admin'
       });
 
+      anotherUser = new User({
+        name: 'Another Fake User',
+        email: 'anotherUser@test.com',
+        password: 'anotherPassword'
+      });
+
       user.save(function(err) {
         if (err) return done(err);
         admin.save(function(err) {
           if (err) return done(err);
-          done();
+          anotherUser.save(function(err) {
+            if (err) return done(err);
+            done();
+          });
         });
       });
     });
@@ -357,5 +367,125 @@ describe('Song API', function() {
           .expect(403, done);
         });
     });
+  });
+
+  describe('DELETE /api/songs/:id', function() {
+    var song = {
+      title: 'Coronus, The Terminator',
+      artist: 'Flying Lotus',
+      url: 'https://soundcloud.com/flyinglotus/coronus-the-terminator'
+    };
+    var songId;
+    var deleted = true;
+
+    beforeEach(function(done) {
+      if (deleted) {
+        var token;
+        request(app)
+          .post('/auth/local')
+          .send({
+            email: 'test@test.com',
+            password: 'password'
+          })
+          .expect(200)
+          .end(function(err, res) {
+            token = res.body.token;
+            request(app)
+            .post('/api/songs')
+            .set('authorization', 'Bearer ' + token)
+            .send(song)
+            .expect(201)
+            .expect('Content-Type', /json/)
+            .end(function(err, res) {
+              if (err) return done(err);
+              songId = res.body._id;
+              done();
+            });
+          });
+      }
+      else {
+        done();
+      }
+    });
+
+    it('should delete the Song when deleted by the song creator', function(done) {
+      var token;
+      request(app)
+        .post('/auth/local')
+        .send({
+          email: 'test@test.com',
+          password: 'password'
+        })
+        .expect(200)
+        .end(function(err, res) {
+          if (err) return done(err);
+          token = res.body.token;
+          request(app)
+          .delete('/api/songs/' + songId)
+          .set('authorization', 'Bearer ' + token)
+          .expect(204)
+          .end(function(err) {
+            if (err) return done(err);
+            deleted = true;
+            request(app)
+            .get('/api/songs/' + songId)
+            .expect(404, done);
+          });
+        });
+    });
+
+    it('should delete the Song when deleted by an admin', function(done) {
+      var token;
+      request(app)
+        .post('/auth/local')
+        .send({
+          email: 'admin@admin.com',
+          password: '1234567890'
+        })
+        .expect(200)
+        .end(function(err, res) {
+          if (err) return done(err);
+          token = res.body.token;
+          request(app)
+          .delete('/api/songs/' + songId)
+          .set('authorization', 'Bearer ' + token)
+          .expect(204)
+          .end(function(err) {
+            if (err) return done(err);
+            deleted = true;
+            request(app)
+            .get('/api/songs/' + songId)
+            .expect(404, done);
+          });
+        });
+    });
+
+    it('should return an error when a random user tries to delete a song', function(done) {
+      var token;
+      request(app)
+        .post('/auth/local')
+        .send({
+          email: 'anotherUser@test.com',
+          password: 'anotherPassword'
+        })
+        .expect(200)
+        .end(function(err, res) {
+          if (err) return done(err);
+          token = res.body.token;
+          deleted = false;
+          request(app)
+          .delete('/api/songs/' + songId)
+          .set('authorization', 'Bearer ' + token)
+          .expect(403, done)
+        });
+    });
+
+    it('should return an error when deleting a song with no auth', function(done) {
+      deleted = false;
+      request(app)
+      .delete('/api/songs/' + songId)
+      .expect(401, done);
+    });
+
   });
 });

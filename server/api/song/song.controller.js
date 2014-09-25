@@ -4,6 +4,7 @@ var _ = require('lodash');
 var Song = require('./song.model');
 var User = require('../user/user.model');
 var errorHelper = require('mongoose-error-helper').errorHelper;
+var mongoose = require('mongoose');
 
 // Get list of songs
 exports.index = function(req, res) {
@@ -63,10 +64,16 @@ exports.destroy = function(req, res) {
   Song.findById(req.params.id, function (err, song) {
     if(err) { return handleError(res, err); }
     if(!song) { return res.send(404); }
-    song.remove(function(err) {
-      if(err) { return handleError(res, err); }
-      return res.send(204);
-    });
+    var userId = mongoose.Types.ObjectId(req.user._id);
+    if (song.createdBy.equals(userId) || req.user.role === 'admin') {
+      song.remove(function(err) {
+        if(err) { return handleError(res, err); }
+        return res.send(204);
+      });
+    }
+    else {
+      return res.send(403);
+    }
   });
 };
 
