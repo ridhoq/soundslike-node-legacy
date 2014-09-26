@@ -8,9 +8,9 @@
 - Artist (String)
 - URL where song can be accessed (String)
 - Created by (ObjectId)
-- Soundslike ids (Array)
+- Edges ids (Array)
 
-###Soundslike
+###Edges
 - Song 1 id (ObjectId)
 - Song 2 id (ObjectId)
 - User ids who voted on it (Array)
@@ -36,18 +36,18 @@ Updates an existing song.
 ####DELETE /api/songs/:id (Song Owner/Admin)
 Deletes an existing song.
 
-###Soundslike
-####GET /api/soundslike/ (Admin)
-Returns list of all Soundslikes
+###Edges
+####GET /api/edges/ (Admin)
+Returns list of all edgess
 
-####GET /api/soundslike/:id
-Return a specific Soundslike relation using id
+####GET /api/edges/:id
+Return a specific edges relation using id
 
-####GET /api/soundslike/:songId1/:songId2
-Return a specific Soundslike relation using song ids
+####GET /api/edges/:songId1/:songId2
+Return a specific edges relation using song ids
 
-####POST /api/soundslike/:songId/ (User)
-Creates a song and Soundslike relation with the specified song
+####POST /api/edges/:songId/ (User)
+Creates a song and edges relation with the specified song
 
-####POST /api/soundslike/:songId1/:songId2 (User)
-Creates a Soundslike relation for the two specified songs
+####POST /api/edges/:songId1/:songId2 (User)
+Creates a edges relation for the two specified songs
